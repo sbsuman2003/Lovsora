@@ -181,6 +181,12 @@ nav button.on .ic{filter:none;opacity:1}
 .pv h3{display:flex;align-items:center;justify-content:center;gap:6px;font-size:22px}
 .modal{max-height:90vh;overflow-y:auto}
 #chatAv,#chatName{cursor:pointer}
+.nbadge{position:absolute;top:-4px;left:calc(50% + 6px);min-width:20px;height:20px;padding:0 6px;border-radius:999px;background:var(--grad);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--bg),0 0 14px #fd6caa99;animation:bpulse 1.6s infinite}
+@keyframes bpulse{50%{transform:scale(1.15)}}
+.mitem.locked{border:1.5px solid transparent;border-radius:18px;padding:12px;margin-bottom:10px;background:linear-gradient(var(--card),var(--card)) padding-box,var(--grad) border-box;box-shadow:0 0 18px #fd6caa33;animation:glow 2s infinite}
+@keyframes glow{50%{box-shadow:0 0 26px #fd6caa66}}
+.mitem>div:nth-child(2){flex:1;min-width:0}.mitem .last{max-width:100%}.mitem .unlockbtn{flex-shrink:0}
+.newtag{font-size:10px;font-weight:700;background:var(--grad);padding:2px 7px;border-radius:999px;margin-left:6px;vertical-align:middle}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
@@ -271,7 +277,7 @@ nav button.on .ic{filter:none;opacity:1}
     </div>
     <nav>
       <button data-tab="discover" class="on"><span class="ic">🔥</span>Discover</button>
-      <button data-tab="matches"><span class="ic">💬</span>Matches<span class="dot" id="matchDot" style="display:none"></span></button>
+      <button data-tab="matches"><span class="ic">💬</span>Matches<span class="nbadge" id="matchBadge" style="display:none"></span></button>
       <button data-tab="shop"><span class="ic">🪙</span>Top-up</button>
       <button data-tab="profile"><span class="ic">👤</span>Profile</button>
     </nav>
@@ -390,6 +396,7 @@ async function route(){
   try{await loadProfile()}catch(e){toast('Couldn\'t load your profile: '+errMsg(e));show('s-auth');return}
   if(P.is_banned){modal(`<h3>Account suspended</h3><p>Your account has been suspended for violating our community guidelines.</p><button class="btn ghost" id="lo">Log out</button>`);$('#lo').onclick=()=>{closeModal();sb.auth.signOut()};return}
   startRealtime();
+  loadMatches(false);
   if(!P.age){renderSetup();show('s-setup');return}
   tab('discover');
 }
@@ -486,23 +493,28 @@ $('#likeBtn').onclick=()=>doSwipe(true);$('#nopeBtn').onclick=()=>doSwipe(false)
 $('#shopBtn').onclick=()=>tab('shop');$('#boostBtn').onclick=()=>buyPerk('boost');
 function unlockLabel(){return P.free_unlocks>0?'🎁 Unlock free (1st one on us)':`🔓 Unlock for 🪙${UNLOCK_COST}`}
 function showMatch(p,matchId){
-  $('#matchDot').style.display='block';
+  loadMatches(false);
   modal(`<div class="matchpop"><div class="title gradtext">It's a Match!</div><div class="pair">${av(P.photo_url,P.name,100)}<div style="margin-left:-20px;border:4px solid #fff;border-radius:50%">${lockedAv(p.name,92)}</div></div><p>Someone liked you back 💕<br>Unlock to see who it is and start chatting.</p><button class="btn primary" id="mUnlock">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);
   $('#mUnlock').onclick=()=>unlockMatch(matchId);
 }
 
 // ================= MATCHES =================
-async function loadMatches(){
+let unreadIds=new Set();
+function updateBadge(){
+  const n=matches.filter(m=>!m.unlocked).length+unreadIds.size, b=$('#matchBadge');
+  if(n>0){b.textContent=n>99?'99+':n;b.style.display='flex'}else b.style.display='none';
+}
+async function loadMatches(render=true){
   const {data,error}=await sb.rpc('get_my_matches');
-  if(error){toast(errMsg(error));return}
-  matches=data||[];renderMatches();
+  if(error){if(render)toast(errMsg(error));return}
+  matches=data||[];updateBadge();if(render)renderMatches();
 }
 function renderMatches(){
   const el=$('#matchList');
   if(!matches.length){el.innerHTML=`<div class="empty" style="position:static;padding-top:80px"><div class="big">💘</div><b style="color:var(--text)">No matches yet</b>Head to Discover and start swiping!</div>`;return}
   const locked=matches.filter(m=>!m.unlocked),fresh=matches.filter(m=>m.unlocked&&!m.last_msg),convo=matches.filter(m=>m.unlocked&&m.last_msg);
   let h='';
-  if(locked.length)h+=`<div class="sec">🔒 Liked you back (${locked.length})</div>`+locked.map(m=>`<div class="mitem" data-unlock="${m.match_id}">${lockedAv(m.name,56)}<div><div class="name">${esc(m.name)}, ${m.age}</div><div class="last">Unlock to see who & chat</div></div><button class="unlockbtn">${P.free_unlocks>0?'🎁 Free':'🪙'+UNLOCK_COST}</button></div>`).join('')+'<div style="height:14px"></div>';
+  if(locked.length)h+=`<div class="sec">💘 New matches waiting (${locked.length})</div>`+locked.map(m=>`<div class="mitem locked" data-unlock="${m.match_id}">${lockedAv(m.name,56)}<div><div class="name">${esc(m.name)}, ${m.age}<span class="newtag">NEW</span></div><div class="last">Tap to see who &amp; chat</div></div><button class="unlockbtn">${P.free_unlocks>0?'🎁 Free':'🪙'+UNLOCK_COST}</button></div>`).join('')+'<div style="height:14px"></div>';
   if(fresh.length)h+=`<div class="sec">New matches</div><div class="newrow">${fresh.map(m=>`<div style="text-align:center;cursor:pointer" data-view="${m.match_id}">${av(m.photo_url,m.name,70)}<div style="font-size:12px;margin-top:4px">${esc(m.name)}</div></div>`).join('')}</div>`;
   if(convo.length)h+=`<div class="sec" style="margin-top:14px">Messages</div>`+convo.map(m=>`<div class="mitem" data-open="${m.match_id}">${av(m.photo_url,m.name,56)}<div><div class="name">${esc(m.name)} ${tick(m.verified)}</div><div class="last">${esc(m.last_msg)}</div></div></div>`).join('');
   el.innerHTML=h;
@@ -533,7 +545,7 @@ function showProfile(m){
 // ================= CHAT =================
 async function openChat(id){
   const m=matches.find(x=>x.match_id===id);if(!m||!m.unlocked)return;
-  chat={id,m,msgs:[]};
+  chat={id,m,msgs:[]};unreadIds.delete(id);updateBadge();
   $('#chatAv').innerHTML=av(m.photo_url,m.name,42);$('#chatName').innerHTML=esc(m.name)+' '+tick(m.verified);$('#chatSub').textContent=[m.age,m.city].filter(Boolean).join(' · ');
   $('#msgs').innerHTML='<div class="msgsys"><span class="spin"></span></div>';show('s-chat');
   const {data,error}=await sb.from('messages').select('*').eq('match_id',id).order('created_at').limit(300);
@@ -628,13 +640,13 @@ function startRealtime(){
   stopRealtime();
   rt=sb.channel('me-'+P.id)
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'matches'},()=>{
-      $('#matchDot').style.display='block';
-      if($('#t-matches').classList.contains('active')&&$('#s-main').classList.contains('active'))loadMatches();
-      else if(!$('#overlay').classList.contains('show'))toast('💘 You have a new match!');
+      const onMatches=$('#t-matches').classList.contains('active')&&$('#s-main').classList.contains('active');
+      loadMatches(onMatches);
+      if(!onMatches&&!$('#overlay').classList.contains('show'))toast('💘 You have a new match!');
     })
     .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},({new:row})=>{
       if(chat&&row.match_id===chat.id){addMsg(row);return}
-      if(row.sender!==P.id){$('#matchDot').style.display='block';toast('💬 New message');if($('#t-matches').classList.contains('active'))loadMatches()}
+      if(row.sender!==P.id){unreadIds.add(row.match_id);updateBadge();toast('💬 New message');if($('#t-matches').classList.contains('active'))loadMatches()}
     })
     .subscribe();
 }
@@ -647,7 +659,7 @@ function tab(name){
   $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
   refreshCoins();
   if(name==='discover')openDiscover();
-  if(name==='matches'){$('#matchDot').style.display='none';$('#matchList').innerHTML='<div class="empty" style="position:static;padding-top:80px"><span class="spin"></span></div>';loadMatches()}
+  if(name==='matches'){$('#matchList').innerHTML='<div class="empty" style="position:static;padding-top:80px"><span class="spin"></span></div>';loadMatches()}
   if(name==='shop')renderShop();
   if(name==='profile')renderProfile();
 }
