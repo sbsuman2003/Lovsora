@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Lovsora – swipe. match. fall in love.</title>
+<meta name="description" content="Lovsora – the casual dating app for Gen Z">
+<link rel="icon" href="/icon-192.png">
+<link rel="apple-touch-icon" href="/icon-512.png">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#150534">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Lovsora">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+
+:root{
+  --pink:#fd6caa; --orange:#fe738a; --purple:#9956fa; --deep:#4802a5; --bg:#150534; --card:#221050; --card2:#2f1a68;
+  --grad:linear-gradient(135deg,#9956fa 0%,#fd6caa 60%,#fe8a7a 100%);
+  --text:#f8f4ff; --muted:#b7a6e3; --green:#2fd38a; --blue:#2f8bff; --line:#3a2378;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#0c0322;font-family:'Poppins',system-ui,sans-serif;color:var(--text)}
+body{display:flex;justify-content:center}
+#app{width:100%;max-width:440px;height:100dvh;background:var(--bg);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.grad{background:var(--grad)}
+.gradtext{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+button{font-family:inherit;cursor:pointer;border:none}
+input,textarea,select{font-family:inherit;font-size:15px;width:100%;padding:13px 14px;border-radius:14px;border:1.5px solid var(--line);background:var(--card);color:var(--text);outline:none}
+input:focus,textarea:focus,select:focus{border-color:var(--pink)}
+label{font-size:13px;color:var(--muted);display:block;margin:12px 0 6px}
+.btn{width:100%;padding:14px;border-radius:999px;font-weight:600;font-size:15px;color:#fff}
+.btn.primary{background:var(--grad)}
+.btn.ghost{background:var(--card2);color:var(--text)}
+.btn.white{background:#fff;color:#222;display:flex;align-items:center;justify-content:center;gap:10px}
+.btn:active{transform:scale(.98)}
+.screen{flex:1;display:none;flex-direction:column;overflow:hidden}
+.screen.active{display:flex}
+.scroll{flex:1;overflow-y:auto;padding:20px}
+.demo-tag{position:absolute;top:8px;left:50%;transform:translateX(-50%);font-size:10px;background:#ffffff14;color:var(--muted);padding:3px 10px;border-radius:999px;z-index:50;letter-spacing:.5px}
+/* auth */
+.auth-wrap{background:radial-gradient(circle at 50% 0%,#4802a5 0%,transparent 60%);padding:40px 24px 24px;display:flex;flex-direction:column;flex:1;overflow-y:auto}
+.logo{text-align:center;margin-top:10px}
+.logoimg{width:96px;height:96px;border-radius:26px;box-shadow:0 12px 40px #9956fa55}
+.wordmark{font-size:40px;font-weight:700;letter-spacing:-.5px;margin-top:10px}
+.brandh{display:flex;align-items:center;gap:8px;font-weight:700!important}
+.brandh img{width:32px;height:32px;border-radius:9px}
+.tagline{text-align:center;color:var(--muted);font-size:14px;margin:4px 0 26px}
+.tabs{display:flex;background:var(--card);border-radius:999px;padding:4px;margin-bottom:6px}
+.tabs button{flex:1;padding:10px;border-radius:999px;background:none;color:var(--muted);font-weight:600}
+.tabs button.on{background:var(--card2);color:var(--text)}
+.or{display:flex;align-items:center;gap:10px;color:var(--muted);font-size:12px;margin:18px 0}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.link{color:var(--pink);font-size:13px;background:none;text-align:right;display:block;margin:8px 0 16px auto}
+.err{color:#ff6b8a;font-size:13px;min-height:18px;margin-top:8px}
+.small{font-size:12px;color:var(--muted);text-align:center;margin-top:16px;line-height:1.5}
+/* header */
+.top{display:flex;align-items:center;justify-content:space-between;padding:22px 18px 10px}
+.top h1{font-size:24px;font-weight:800}
+.coins{display:flex;align-items:center;gap:6px;background:var(--card);padding:7px 12px;border-radius:999px;font-weight:600;font-size:14px}
+/* swipe */
+.deck{flex:1;position:relative;margin:6px 16px 0}
+.pcard{position:absolute;inset:0;border-radius:24px;overflow:hidden;box-shadow:0 10px 30px #0008;touch-action:none;user-select:none;transition:transform .3s ease}
+.pcard .photo{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:110px}
+.pcard .info{position:absolute;left:0;right:0;bottom:0;padding:70px 20px 20px;background:linear-gradient(transparent,#000d)}
+.pcard h2{font-size:26px;font-weight:700;display:flex;align-items:center;gap:6px}
+.pcard p{font-size:14px;opacity:.9;margin-top:4px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.chip{font-size:12px;background:#ffffff26;padding:4px 10px;border-radius:999px;backdrop-filter:blur(4px)}
+.stamp{position:absolute;top:30px;font-size:32px;font-weight:800;padding:4px 14px;border:4px solid;border-radius:12px;opacity:0}
+.stamp.like{left:20px;color:var(--green);border-color:var(--green);transform:rotate(-15deg)}
+.stamp.nope{right:20px;color:#ff4d6d;border-color:#ff4d6d;transform:rotate(15deg)}
+.boostbadge{position:absolute;top:16px;left:16px;background:var(--grad);font-size:11px;font-weight:600;padding:4px 10px;border-radius:999px}
+.actions{display:flex;justify-content:center;align-items:center;gap:18px;padding:16px}
+.circle{width:60px;height:60px;border-radius:50%;background:var(--card);display:flex;align-items:center;justify-content:center;font-size:26px;box-shadow:0 4px 14px #0006}
+.circle.sm{width:48px;height:48px;font-size:20px}
+.circle:active{transform:scale(.9)}
+.swipeinfo{text-align:center;font-size:12px;color:var(--muted);padding-bottom:4px}
+.empty{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:30px;gap:12px;color:var(--muted)}
+.empty .big{font-size:60px}
+/* nav */
+nav{display:flex;border-top:1px solid var(--line);background:var(--bg);padding:8px 0 calc(8px + env(safe-area-inset-bottom))}
+nav button{flex:1;background:none;color:var(--muted);font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;position:relative}
+nav button .ic{font-size:22px;filter:grayscale(1);opacity:.7}
+nav button.on{color:var(--pink)}
+nav button.on .ic{filter:none;opacity:1}
+.dot{position:absolute;top:0;right:28%;width:9px;height:9px;border-radius:50%;background:var(--pink)}
+/* matches */
+.newrow{display:flex;gap:14px;overflow-x:auto;padding-bottom:10px}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.mitem{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.mitem .name{font-weight:600;display:flex;align-items:center;gap:4px}
+.mitem .last{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:240px}
+.sec{font-size:13px;color:var(--muted);font-weight:600;margin:6px 0 10px;text-transform:uppercase;letter-spacing:.6px}
+/* chat */
+.chathead{display:flex;align-items:center;gap:12px;padding:20px 16px 12px;border-bottom:1px solid var(--line)}
+.back{background:none;color:var(--text);font-size:24px;padding:0 6px}
+.msgs{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px}
+.msg{max-width:75%;padding:10px 14px;border-radius:18px;font-size:14px;line-height:1.4}
+.msg.me{align-self:flex-end;background:var(--grad);border-bottom-right-radius:6px}
+.msg.them{align-self:flex-start;background:var(--card2);border-bottom-left-radius:6px}
+.msgsys{align-self:center;font-size:12px;color:var(--muted);text-align:center;margin:8px 0}
+.composer{display:flex;gap:8px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line)}
+.composer input{border-radius:999px}
+.send{width:48px;height:48px;border-radius:50%;flex-shrink:0;font-size:20px;color:#fff}
+/* shop */
+.wallet{border-radius:22px;padding:22px;margin-bottom:20px}
+.wallet .amt{font-size:40px;font-weight:800}
+.packs{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:24px}
+.pack{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:14px 8px;text-align:center;position:relative}
+.pack.hot{border-color:var(--pink)}
+.pack .c{font-size:22px;font-weight:800}
+.pack .p{font-size:13px;color:var(--muted);margin:2px 0 10px}
+.pack button{width:100%;padding:8px;border-radius:999px;font-size:13px;font-weight:600;color:#fff;background:var(--card2)}
+.pack.hot button{background:var(--grad)}
+.ribbon{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-size:10px;background:var(--pink);padding:2px 8px;border-radius:999px;white-space:nowrap;font-weight:600}
+.perk{display:flex;align-items:center;gap:14px;background:var(--card);border-radius:18px;padding:16px;margin-bottom:12px}
+.perk .ico{width:48px;height:48px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0}
+.perk .t{font-weight:600}
+.perk .d{font-size:12px;color:var(--muted)}
+.perk button{margin-left:auto;padding:9px 14px;border-radius:999px;font-weight:600;font-size:13px;color:#fff;background:var(--grad);white-space:nowrap}
+.perk button:disabled{background:var(--card2);color:var(--muted)}
+/* profile */
+.me-top{text-align:center;padding:10px 0 20px}
+.me-top .av{margin:0 auto 12px}
+.me-top h2{font-size:22px;display:flex;align-items:center;justify-content:center;gap:6px}
+.tick{display:inline-flex;width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:12px;align-items:center;justify-content:center;font-weight:700;flex-shrink:0}
+.row{display:flex;justify-content:space-between;align-items:center;background:var(--card);padding:15px 16px;border-radius:16px;margin-bottom:10px;font-size:14px}
+.row span:last-child{color:var(--muted)}
+.verifybox{background:linear-gradient(135deg,#1d3a6b,#2a1f55);border-radius:20px;padding:18px;margin-bottom:16px}
+.verifybox h3{font-size:16px;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.verifybox p{font-size:13px;color:#c9c3e6;margin-bottom:12px}
+/* setup */
+.interests{display:flex;flex-wrap:wrap;gap:8px}
+.int{padding:8px 14px;border-radius:999px;background:var(--card);border:1.5px solid var(--line);font-size:13px;color:var(--text)}
+.int.on{border-color:var(--pink);background:#fd6caa22}
+.emojis{display:flex;gap:10px;flex-wrap:wrap}
+.emo{width:52px;height:52px;border-radius:50%;font-size:26px;background:var(--card);border:2px solid var(--line)}
+.emo.on{border-color:var(--pink)}
+/* overlays */
+.overlay{position:absolute;inset:0;background:#000c;display:none;align-items:center;justify-content:center;z-index:100;padding:24px}
+.overlay.show{display:flex}
+.modal{background:var(--card);border-radius:24px;padding:24px;width:100%;text-align:center}
+.modal h3{font-size:20px;margin-bottom:8px}
+.modal p{font-size:14px;color:var(--muted);margin-bottom:18px;line-height:1.5}
+.modal .btn{margin-top:8px}
+.matchpop{text-align:center}
+.matchpop .title{font-size:42px;font-weight:800;font-style:italic;margin-bottom:20px}
+.pair{display:flex;justify-content:center;margin-bottom:24px}
+.pair .av{border:4px solid #fff}
+.pair .av:last-child{margin-left:-20px}
+.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:600;opacity:0;transition:.3s;z-index:200;white-space:nowrap;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.lockav{position:relative;border-radius:50%;overflow:hidden;flex-shrink:0;margin:0 auto}
+.lockav .av{filter:blur(9px);transform:scale(1.25)}
+.lockav .lk{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#0004;font-size:22px}
+.unlockbtn{margin-left:auto;padding:8px 14px;border-radius:999px;font-weight:600;font-size:12px;color:#fff;background:var(--grad);white-space:nowrap}
+.gsheet .acc{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;background:var(--card2);margin-bottom:8px;text-align:left;width:100%;color:var(--text)}
+.gsheet .acc .g{width:38px;height:38px;border-radius:50%;background:var(--purple);display:flex;align-items:center;justify-content:center;font-weight:700}
+.pay .upi{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pay .upi button{padding:12px;border-radius:14px;background:var(--card2);color:var(--text);font-weight:600;border:1.5px solid transparent}
+.pay .upi button.on{border-color:var(--pink)}
+
+#app{padding-top:env(safe-area-inset-top)}
+.ph{background-size:cover;background-position:center}
+.pcard .photo.ph{font-size:0}
+.lockph{width:100%;height:100%;border-radius:50%;filter:blur(8px);transform:scale(1.3)}
+.loading{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+.loading img{width:90px;height:90px;border-radius:24px;animation:pulse 1.2s infinite ease-in-out}
+@keyframes pulse{50%{transform:scale(.9);opacity:.7}}
+.photopick{width:120px;height:120px;border-radius:50%;margin:10px auto 0;display:flex;align-items:center;justify-content:center;background:var(--card);border:2px dashed var(--line);cursor:pointer;font-size:13px;color:var(--muted);text-align:center;overflow:hidden;position:relative}
+.photopick.has{border:3px solid var(--pink)}
+.seg{display:flex;gap:8px;flex-wrap:wrap}
+.menu-dots{margin-left:auto;background:none;color:var(--text);font-size:22px;padding:4px 10px}
+.opt{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:14px;background:var(--card2);color:var(--text);margin-bottom:8px;font-size:15px}
+.beta{font-size:10px;background:var(--grad);padding:2px 8px;border-radius:999px;margin-left:6px;font-weight:600;vertical-align:middle}
+.spin{display:inline-block;width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<div id="app">
+
+  <section class="screen active" id="s-loading">
+    <div class="loading"><img src="/icon-192.png" alt=""><div class="wordmark" style="font-size:28px">Lovsora</div></div>
+  </section>
+
+  <!-- AUTH -->
+  <section class="screen" id="s-auth">
+    <div class="auth-wrap">
+      <div class="logo"><img src="/icon-192.png" alt="" class="logoimg"><div class="wordmark">Lovsora<span class="beta">BETA</span></div></div>
+      <div class="tagline">swipe. match. fall in love. 💜</div>
+      <div class="tabs"><button id="tab-login" class="on">Log in</button><button id="tab-signup">Sign up</button></div>
+      <form id="authForm" autocomplete="on">
+        <div id="nameWrap" style="display:none"><label>Your name</label><input id="aName" autocomplete="given-name" placeholder="e.g. Riya"></div>
+        <label>Email</label><input id="aEmail" type="email" autocomplete="email" placeholder="you@gmail.com">
+        <label>Password</label><input id="aPass" type="password" autocomplete="current-password" placeholder="Min 8 characters, letters + numbers">
+        <button type="button" class="link" id="forgotBtn">Forgot password?</button>
+        <button class="btn primary" id="authSubmit" type="submit">Log in</button>
+        <div class="err" id="authErr"></div>
+      </form>
+      <div class="or">or</div>
+      <button class="btn white" id="googleBtn">
+        <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>
+        Continue with Google
+      </button>
+      <div class="small">18+ only. By continuing you agree to our Terms & Privacy Policy.<br>Same account works on app & website.</div>
+    </div>
+  </section>
+
+  <!-- SETUP -->
+  <section class="screen" id="s-setup">
+    <div class="scroll">
+      <h1 style="font-size:26px;font-weight:800">Set up your <span class="gradtext">profile</span></h1>
+      <p style="color:var(--muted);font-size:14px;margin-top:4px">Let people know your vibe ✌️</p>
+      <label class="photopick" id="photoPick">📷<br>Add photo<input type="file" accept="image/*" id="photoIn" style="display:none"></label>
+      <label>Name</label><input id="sName" placeholder="Your name" maxlength="30">
+      <label>Age</label><input id="sAge" type="number" min="18" max="99" inputmode="numeric" placeholder="18+">
+      <label>I am a</label><div class="seg" id="genderPick"></div>
+      <label>Show me</label><div class="seg" id="showPick"></div>
+      <label>City</label><input id="sCity" placeholder="e.g. Kolkata" maxlength="40">
+      <label>Bio</label><textarea id="sBio" rows="3" maxlength="300" placeholder="chai > coffee. looking for someone to go on random food walks with 🍜"></textarea>
+      <label>Interests (pick up to 5)</label>
+      <div class="interests" id="intPick"></div>
+      <div class="err" id="setupErr"></div>
+      <button class="btn primary" id="setupDone" style="margin-top:10px">Save & start swiping 🔥</button>
+      <div style="height:30px"></div>
+    </div>
+  </section>
+
+  <!-- MAIN -->
+  <section class="screen" id="s-main">
+    <div class="screen" id="t-discover">
+      <div class="top"><h1 class="brandh"><img src="/icon-192.png" alt="">Lovsora</h1><div class="coins">🪙 <span class="coinVal">0</span></div></div>
+      <div class="deck" id="deck"></div>
+      <div class="actions">
+        <button class="circle sm" id="boostBtn" title="Boost">🚀</button>
+        <button class="circle" id="nopeBtn" style="color:#ff4d6d">✕</button>
+        <button class="circle" id="likeBtn">💜</button>
+        <button class="circle sm" id="shopBtn" title="Top-up">⚡</button>
+      </div>
+      <div class="swipeinfo" id="swipeInfo"></div>
+    </div>
+    <div class="screen" id="t-matches">
+      <div class="top"><h1>Matches</h1><div class="coins">🪙 <span class="coinVal">0</span></div></div>
+      <div class="scroll" style="padding-top:6px" id="matchList"></div>
+    </div>
+    <div class="screen" id="t-shop">
+      <div class="top"><h1>Top-up</h1></div>
+      <div class="scroll" style="padding-top:6px">
+        <div class="wallet grad"><div style="font-size:13px;opacity:.9">Your coins</div><div class="amt">🪙 <span class="coinVal">0</span></div><div style="font-size:12px;opacity:.9">No subscription. Pay only when you want ✌️</div></div>
+        <div class="sec">Buy coins</div>
+        <div class="packs" id="packs"></div>
+        <div class="sec">Use coins</div>
+        <div class="perk"><div class="ico" style="background:linear-gradient(135deg,#2fd38a,#2f8bff)">🔓</div><div><div class="t">Unlock a match</div><div class="d">See who liked you back & chat · 1st one free</div></div><span style="margin-left:auto;font-weight:600;font-size:13px;color:var(--muted)">🪙20</span></div>
+        <div id="perks"></div>
+        <div class="small">BETA: payment ekhono test mode-e. Coin free-te paabe.</div>
+      </div>
+    </div>
+    <div class="screen" id="t-profile">
+      <div class="top"><h1>Profile</h1></div>
+      <div class="scroll" style="padding-top:0" id="profileBody"></div>
+    </div>
+    <nav>
+      <button data-tab="discover" class="on"><span class="ic">🔥</span>Discover</button>
+      <button data-tab="matches"><span class="ic">💬</span>Matches<span class="dot" id="matchDot" style="display:none"></span></button>
+      <button data-tab="shop"><span class="ic">🪙</span>Top-up</button>
+      <button data-tab="profile"><span class="ic">👤</span>Profile</button>
+    </nav>
+  </section>
+
+  <!-- CHAT -->
+  <section class="screen" id="s-chat">
+    <div class="chathead"><button class="back" id="chatBack">‹</button><div id="chatAv"></div><div><div id="chatName" style="font-weight:600;display:flex;gap:4px;align-items:center"></div><div style="font-size:12px;color:var(--muted)" id="chatSub"></div></div><button class="menu-dots" id="chatMenu">⋮</button></div>
+    <div class="msgs" id="msgs"></div>
+    <form class="composer" id="composer"><input id="msgIn" placeholder="Say something nice 👋" autocomplete="off" maxlength="1000"><button class="send grad" type="submit">➤</button></form>
+  </section>
+
+  <div class="overlay" id="overlay"><div class="modal" id="modal"></div></div>
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ================= CONFIG =================
+const SUPABASE_URL = 'https://nramecwiihbmphvmjpxe.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_K6o54KL3eDwJauJewyZv3A_KmcbPgs5';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const FREE_SWIPES = 15, UNLOCK_COST = 20;
+
+// ================= STATE =================
+let session = null, P = null, currentUid = null, rt = null;
+let queue = [], deckBusy = false, matches = [], chat = null;
+
+// ================= HELPERS =================
+const $ = s => document.querySelector(s), $$ = s => document.querySelectorAll(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const istToday = () => new Date(Date.now() + 5.5 * 3600e3).toISOString().slice(0, 10);
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2500)}
+function modal(html){$('#modal').innerHTML=html;$('#overlay').classList.add('show')}
+function closeModal(){$('#overlay').classList.remove('show')}
+$('#overlay').addEventListener('click',e=>{if(e.target.id==='overlay')closeModal()});
+function show(id){$$('#app > .screen').forEach(s=>s.classList.remove('active'));$('#'+id).classList.add('active')}
+const tick = v => v ? '<span class="tick" title="Verified">✓</span>' : '';
+const GR = [['#9956fa','#fd6caa'],['#6d27d1','#fe8a7a'],['#4802a5','#9956fa'],['#fd6caa','#fe8a7a']];
+function grad(name){let h=0;for(const c of String(name||'?'))h=(h*31+c.charCodeAt(0))>>>0;const g=GR[h%GR.length];return `linear-gradient(135deg,${g[0]},${g[1]})`}
+function av(url,name,size=56){
+  return url ? `<div class="av ph" style="width:${size}px;height:${size}px;background-image:url('${esc(url)}')"></div>`
+             : `<div class="av" style="width:${size}px;height:${size}px;font-size:${size*.42}px;font-weight:700;background:${grad(name)}">${esc((name||'?')[0].toUpperCase())}</div>`;
+}
+function lockedAv(name,size=56){return `<div class="lockav" style="width:${size}px;height:${size}px"><div class="lockph" style="background:${grad(name)}"></div><div class="lk" style="font-size:${size*.32}px">🔒</div></div>`}
+function busy(btn,on,label){if(!btn)return;if(on){btn._l=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin"></span>'}else{btn.disabled=false;btn.innerHTML=label||btn._l}}
+function errMsg(e){const m=(e&&e.message)||String(e);
+  if(/Invalid login/i.test(m))return 'Email ba password bhul';
+  if(/already registered/i.test(m))return 'Ei email-e already account ache. Log in koro.';
+  if(/provider is not enabled/i.test(m))return 'Google login ekhono chalu hoyni. Email diye try koro.';
+  if(/Email not confirmed/i.test(m))return 'Age email-e asha link-e click kore confirm koro.';
+  if(/rate limit/i.test(m))return 'Onek beshi try hoyeche, kichukkhon por abar try koro.';
+  return m}
+function compress(file,max=1080){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(img.src);c.toBlob(b=>b?res(b):rej(new Error('Photo process kora gelo na')),'image/jpeg',.82)};img.onerror=()=>rej(new Error('Ei photo ta khola jacche na, onno photo try koro'));img.src=URL.createObjectURL(file)})}
+const unlimitedOn = () => P && P.unlimited_until && new Date(P.unlimited_until) > new Date();
+const boostOn = () => P && P.boost_until && new Date(P.boost_until) > new Date();
+function swipesLeft(){if(unlimitedOn())return Infinity;return P.swipe_day!==istToday()?FREE_SWIPES:Math.max(0,FREE_SWIPES-P.swipes_used)}
+
+// ================= AUTH =================
+let mode='login';
+function setMode(m){mode=m;$('#tab-login').classList.toggle('on',m==='login');$('#tab-signup').classList.toggle('on',m==='signup');$('#nameWrap').style.display=m==='signup'?'block':'none';$('#authSubmit').textContent=m==='login'?'Log in':'Create account';$('#forgotBtn').style.display=m==='login'?'block':'none';$('#aPass').autocomplete=m==='login'?'current-password':'new-password';$('#authErr').textContent=''}
+$('#tab-login').onclick=()=>setMode('login');$('#tab-signup').onclick=()=>setMode('signup');
+
+$('#authForm').onsubmit=async e=>{
+  e.preventDefault();
+  const email=$('#aEmail').value.trim().toLowerCase(),pass=$('#aPass').value,err=$('#authErr'),btn=$('#authSubmit');
+  err.textContent='';
+  if(!/^\S+@\S+\.\S+$/.test(email))return err.textContent='Valid email dao';
+  if(mode==='signup'){
+    const name=$('#aName').value.trim();
+    if(!name)return err.textContent='Tomar naam dao';
+    if(pass.length<8||!/[a-z]/i.test(pass)||!/\d/.test(pass))return err.textContent='Password: 8+ characters, letter + number lagbe';
+    busy(btn,true);
+    const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name},emailRedirectTo:location.origin}});
+    busy(btn,false);
+    if(error)return err.textContent=errMsg(error);
+    if(data.user&&data.user.identities&&data.user.identities.length===0)return err.textContent='Ei email-e already account ache. Log in koro.';
+    if(!data.session)modal(`<h3>Check your email 📩</h3><p><b>${esc(email)}</b>-e ekটা confirm link pathano hoyeche. Link-e click kore tarpor log in koro.</p><button class="btn primary" onclick="closeModal()">OK</button>`);
+  }else{
+    if(!pass)return err.textContent='Password dao';
+    busy(btn,true);
+    const {error}=await sb.auth.signInWithPassword({email,password:pass});
+    busy(btn,false);
+    if(error)err.textContent=errMsg(error);
+  }
+};
+$('#forgotBtn').onclick=async()=>{
+  const email=$('#aEmail').value.trim().toLowerCase();
+  if(!/^\S+@\S+\.\S+$/.test(email))return $('#authErr').textContent='Age upore tomar email ta likho';
+  const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
+  if(error)return $('#authErr').textContent=errMsg(error);
+  modal(`<h3>Reset link sent 📩</h3><p><b>${esc(email)}</b>-e password reset link pathano hoyeche. Link-e click korle notun password dite parbe.</p><button class="btn primary" onclick="closeModal()">OK</button>`);
+};
+$('#googleBtn').onclick=async()=>{
+  const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
+  if(error)$('#authErr').textContent=errMsg(error);
+};
+function showResetPw(){
+  modal(`<h3>Set a new password 🔑</h3><p>Notun password dao (8+ characters, letter + number)</p><input id="npw" type="password" autocomplete="new-password" placeholder="New password"><div class="err" id="npwErr"></div><button class="btn primary" id="npwGo">Save password</button>`);
+  $('#npwGo').onclick=async()=>{const pw=$('#npw').value;if(pw.length<8||!/[a-z]/i.test(pw)||!/\d/.test(pw))return $('#npwErr').textContent='8+ characters, letter + number lagbe';busy($('#npwGo'),true);const {error}=await sb.auth.updateUser({password:pw});busy($('#npwGo'),false);if(error)return $('#npwErr').textContent=errMsg(error);closeModal();toast('Password updated ✅')};
+}
+
+sb.auth.onAuthStateChange((event,s)=>{
+  session=s;
+  if(event==='PASSWORD_RECOVERY'){setTimeout(showResetPw,0);return}
+  const uid=s?s.user.id:null;
+  if(uid!==currentUid||event==='INITIAL_SESSION'){currentUid=uid;setTimeout(route,0)}
+});
+
+async function loadProfile(){
+  const {data,error}=await sb.from('profiles').select('*').eq('id',session.user.id).single();
+  if(error)throw error;P=data;refreshCoins();return P;
+}
+async function route(){
+  stopRealtime();
+  if(!session){P=null;show('s-auth');return}
+  try{await loadProfile()}catch(e){toast('Profile load hocche na: '+errMsg(e));show('s-auth');return}
+  if(P.is_banned){modal(`<h3>Account suspended</h3><p>Tomar account ta community rules bhangar jonno bondho kora hoyeche.</p><button class="btn ghost" id="lo">Log out</button>`);$('#lo').onclick=()=>{closeModal();sb.auth.signOut()};return}
+  startRealtime();
+  if(!P.age){renderSetup();show('s-setup');return}
+  tab('discover');
+}
+
+// ================= SETUP =================
+const INTERESTS=['Music','Movies','Food','Travel','Gaming','Anime','Books','Art','Fitness','Dance','Memes','Chai','Cafés','Pets','Tech','Photography','Fashion','Sports','Comedy'];
+const GENDERS=[['man','Man'],['woman','Woman'],['nonbinary','Non-binary']];
+const SHOWME=[['men','Men'],['women','Women'],['everyone','Everyone']];
+let pickInts=[],pickGender=null,pickShow='everyone',pickedPhoto=null;
+function chips(el,list,val,cb){el.innerHTML=list.map(([v,l])=>`<button type="button" class="int ${v===val?'on':''}" data-v="${v}">${l}</button>`).join('');el.querySelectorAll('.int').forEach(b=>b.onclick=()=>{el.querySelectorAll('.int').forEach(x=>x.classList.toggle('on',x===b));cb(b.dataset.v)})}
+function setPhotoPreview(url){const pp=$('#photoPick');if(url){pp.classList.add('has');pp.style.background=`center/cover url('${url}')`;pp.childNodes[0].textContent='';pp.childNodes[2].textContent=''}}
+function renderSetup(){
+  pickInts=[...(P.interests||[])];pickGender=P.gender;pickShow=P.show_me||'everyone';pickedPhoto=null;
+  $('#sName').value=P.name||'';$('#sAge').value=P.age||'';$('#sCity').value=P.city||'';$('#sBio').value=P.bio||'';$('#setupErr').textContent='';
+  chips($('#genderPick'),GENDERS,pickGender,v=>pickGender=v);
+  chips($('#showPick'),SHOWME,pickShow,v=>pickShow=v);
+  $('#intPick').innerHTML=INTERESTS.map(i=>`<button type="button" class="int ${pickInts.includes(i)?'on':''}" data-i="${i}">${i}</button>`).join('');
+  $$('#intPick .int').forEach(b=>b.onclick=()=>{const i=b.dataset.i;if(pickInts.includes(i))pickInts=pickInts.filter(x=>x!==i);else{if(pickInts.length>=5)return toast('Max 5 ta');pickInts.push(i)}b.classList.toggle('on',pickInts.includes(i))});
+  if(P.photo_url)setPhotoPreview(P.photo_url);
+}
+$('#photoIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{pickedPhoto=await compress(f);setPhotoPreview(URL.createObjectURL(pickedPhoto))}catch(er){toast(er.message)}};
+$('#setupDone').onclick=async()=>{
+  const err=$('#setupErr'),btn=$('#setupDone'),name=$('#sName').value.trim(),age=parseInt($('#sAge').value,10);
+  err.textContent='';
+  if(!pickedPhoto&&!P.photo_url)return err.textContent='Ekটা photo add koro 📷';
+  if(!name)return err.textContent='Name dao';
+  if(!age||age<18||age>99)return err.textContent='Shudhu 18+ allowed';
+  if(!pickGender)return err.textContent='"I am a" select koro';
+  busy(btn,true);
+  try{
+    let photo_url=P.photo_url;
+    if(pickedPhoto){
+      const path=`${P.id}/${Date.now()}.jpg`;
+      const {error:upErr}=await sb.storage.from('photos').upload(path,pickedPhoto,{contentType:'image/jpeg'});
+      if(upErr)throw upErr;
+      photo_url=sb.storage.from('photos').getPublicUrl(path).data.publicUrl;
+    }
+    const upd={name,age,gender:pickGender,show_me:pickShow,city:$('#sCity').value.trim(),bio:$('#sBio').value.trim(),interests:pickInts,photo_url};
+    const {error}=await sb.from('profiles').update(upd).eq('id',P.id);
+    if(error)throw error;
+    Object.assign(P,upd);queue=[];toast('Profile saved ✅');tab('discover');
+  }catch(e){err.textContent=errMsg(e)}
+  busy(btn,false);
+};
+
+// ================= DISCOVER =================
+async function loadDeck(){
+  const {data,error}=await sb.rpc('get_discover',{lim:20});
+  if(error){toast(errMsg(error));return}
+  const have=new Set(queue.map(p=>p.id));
+  queue=queue.concat((data||[]).filter(p=>!have.has(p.id)));
+}
+async function openDiscover(){$('#deck').innerHTML='<div class="empty"><span class="spin"></span></div>';if(queue.length<3)await loadDeck();renderDeck()}
+function renderDeck(){
+  const deck=$('#deck'),left=swipesLeft();
+  $('#swipeInfo').innerHTML=(unlimitedOn()?'♾️ Unlimited swipes active':`${left} free swipes left today`)+(boostOn()?' · 🚀 Boost on':'');
+  if(left<=0){deck.innerHTML=`<div class="empty"><div class="big">⏳</div><b style="color:var(--text)">Ajker free swipes shesh!</b>Kal abar ${FREE_SWIPES} ta free paabe, ba ekhon-i unlimited nao.<button class="btn primary" style="width:auto;padding:12px 22px" id="goShop">♾️ Get unlimited swipes</button></div>`;$('#goShop').onclick=()=>tab('shop');return}
+  if(!queue.length){deck.innerHTML=`<div class="empty"><div class="big">🌍</div><b style="color:var(--text)">Ekhon r keu nei</b>Beta-te ekhono kom user. Bondhuder Lovsora-r link pathao, tarpor ekhane refresh koro!<button class="btn ghost" style="width:auto;padding:10px 20px" id="refreshDeck">🔄 Refresh</button></div>`;$('#refreshDeck').onclick=openDiscover;return}
+  deck.innerHTML=queue.slice(0,2).reverse().map((p,i,arr)=>`
+    <div class="pcard" data-id="${p.id}" style="${i<arr.length-1?'transform:scale(.95) translateY(10px)':''}">
+      ${p.photo_url?`<div class="photo ph" style="background-image:url('${esc(p.photo_url)}')"></div>`:`<div class="photo" style="background:${grad(p.name)};font-size:110px;font-weight:800">${esc((p.name||'?')[0])}</div>`}
+      ${p.boosted?'<div class="boostbadge">🚀 Boosted</div>':''}
+      <div class="stamp like">LIKE</div><div class="stamp nope">NOPE</div>
+      <div class="info"><h2>${esc(p.name)}, ${p.age} ${tick(p.verified)}</h2>${p.city?`<p>📍 ${esc(p.city)}</p>`:''}${p.bio?`<p>${esc(p.bio)}</p>`:''}<div class="chips">${(p.interests||[]).map(t=>`<span class="chip">${esc(t)}</span>`).join('')}</div></div>
+    </div>`).join('');
+  attachDrag(deck.lastElementChild);
+}
+function attachDrag(card){
+  let sx=0,sy=0,dx=0,drag=false;
+  card.addEventListener('pointerdown',e=>{drag=true;sx=e.clientX;sy=e.clientY;card.style.transition='none';card.setPointerCapture(e.pointerId)});
+  card.addEventListener('pointermove',e=>{if(!drag)return;dx=e.clientX-sx;const dy=e.clientY-sy;card.style.transform=`translate(${dx}px,${dy*.3}px) rotate(${dx/18}deg)`;card.querySelector('.like').style.opacity=Math.max(0,dx/100);card.querySelector('.nope').style.opacity=Math.max(0,-dx/100)});
+  const end=()=>{if(!drag)return;drag=false;card.style.transition='transform .3s ease';if(dx>100)doSwipe(true);else if(dx<-100)doSwipe(false);else{card.style.transform='';card.querySelectorAll('.stamp').forEach(s=>s.style.opacity=0)}dx=0};
+  card.addEventListener('pointerup',end);card.addEventListener('pointercancel',end);
+}
+async function doSwipe(like){
+  const card=$('#deck .pcard:last-child');if(!card||deckBusy)return;
+  if(swipesLeft()<=0)return renderDeck();
+  deckBusy=true;
+  const p=queue.find(x=>x.id===card.dataset.id);
+  card.style.transition='transform .3s ease';
+  card.style.transform=`translate(${like?500:-500}px,40px) rotate(${like?30:-30}deg)`;
+  card.querySelector(like?'.like':'.nope').style.opacity=1;
+  const {data,error}=await sb.rpc('swipe',{p_target:p.id,p_liked:like});
+  deckBusy=false;
+  if(error){toast(errMsg(error));renderDeck();return}
+  if(!data.ok&&data.error==='limit'){P.swipe_day=istToday();P.swipes_used=FREE_SWIPES;renderDeck();return}
+  queue=queue.filter(x=>x.id!==p.id);
+  P.swipe_day=istToday();if(data.swipes_left>=0)P.swipes_used=FREE_SWIPES-data.swipes_left;
+  if(queue.length<3)await loadDeck();
+  renderDeck();
+  if(data.matched)showMatch(p,data.match_id);
+}
+$('#likeBtn').onclick=()=>doSwipe(true);$('#nopeBtn').onclick=()=>doSwipe(false);
+$('#shopBtn').onclick=()=>tab('shop');$('#boostBtn').onclick=()=>buyPerk('boost');
+function unlockLabel(){return P.free_unlocks>0?'🎁 Unlock free (1st one on us)':`🔓 Unlock for 🪙${UNLOCK_COST}`}
+function showMatch(p,matchId){
+  $('#matchDot').style.display='block';
+  modal(`<div class="matchpop"><div class="title gradtext">It's a Match!</div><div class="pair">${av(P.photo_url,P.name,100)}<div style="margin-left:-20px;border:4px solid #fff;border-radius:50%">${lockedAv(p.name,92)}</div></div><p>Someone liked you back 💕<br>Unlock korle dekhte parbe ke, ar chat korte parbe.</p><button class="btn primary" id="mUnlock">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);
+  $('#mUnlock').onclick=()=>unlockMatch(matchId);
+}
+
+// ================= MATCHES =================
+async function loadMatches(){
+  const {data,error}=await sb.rpc('get_my_matches');
+  if(error){toast(errMsg(error));return}
+  matches=data||[];renderMatches();
+}
+function renderMatches(){
+  const el=$('#matchList');
+  if(!matches.length){el.innerHTML=`<div class="empty" style="position:static;padding-top:80px"><div class="big">💘</div><b style="color:var(--text)">Ekhono kono match nei</b>Discover-e giye swipe right koro!</div>`;return}
+  const locked=matches.filter(m=>!m.unlocked),fresh=matches.filter(m=>m.unlocked&&!m.last_msg),convo=matches.filter(m=>m.unlocked&&m.last_msg);
+  let h='';
+  if(locked.length)h+=`<div class="sec">🔒 Liked you back (${locked.length})</div>`+locked.map(m=>`<div class="mitem" data-unlock="${m.match_id}">${lockedAv(m.name,56)}<div><div class="name">${esc(m.name)}, ${m.age}</div><div class="last">Unlock to see who & chat</div></div><button class="unlockbtn">${P.free_unlocks>0?'🎁 Free':'🪙'+UNLOCK_COST}</button></div>`).join('')+'<div style="height:14px"></div>';
+  if(fresh.length)h+=`<div class="sec">New matches</div><div class="newrow">${fresh.map(m=>`<div style="text-align:center;cursor:pointer" data-open="${m.match_id}">${av(m.photo_url,m.name,70)}<div style="font-size:12px;margin-top:4px">${esc(m.name)}</div></div>`).join('')}</div>`;
+  if(convo.length)h+=`<div class="sec" style="margin-top:14px">Messages</div>`+convo.map(m=>`<div class="mitem" data-open="${m.match_id}">${av(m.photo_url,m.name,56)}<div><div class="name">${esc(m.name)} ${tick(m.verified)}</div><div class="last">${esc(m.last_msg)}</div></div></div>`).join('');
+  el.innerHTML=h;
+  el.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>openChat(x.dataset.open));
+  el.querySelectorAll('[data-unlock]').forEach(x=>x.onclick=()=>{const m=matches.find(y=>y.match_id===x.dataset.unlock);modal(`<div class="matchpop"><div class="pair">${lockedAv(m.name,100)}</div><h3>${esc(m.name)}, ${m.age} liked you back 💕</h3><p>Unlock korle chobi, naam, profile dekhte parbe ar chat korte parbe.</p><button class="btn primary" id="uGo">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);$('#uGo').onclick=()=>unlockMatch(m.match_id)});
+}
+async function unlockMatch(id){
+  const btn=$('#mUnlock')||$('#uGo');busy(btn,true);
+  const {data,error}=await sb.rpc('unlock_match',{p_match:id});
+  busy(btn,false);
+  if(error)return toast(errMsg(error));
+  if(!data.ok){modal(`<h3>Not enough coins 🪙</h3><p>Match unlock korte ${UNLOCK_COST} coins lagbe. Tomar ache ${P.coins}.</p><button class="btn primary" id="toShop">Top-up now</button><button class="btn ghost" onclick="closeModal()">Later</button>`);$('#toShop').onclick=()=>{closeModal();tab('shop')};return}
+  await loadProfile();await loadMatches();
+  const m=matches.find(x=>x.match_id===id);
+  if(!m)return closeModal();
+  modal(`<div class="matchpop"><div class="pair">${av(m.photo_url,m.name,110)}</div><h3>It's ${esc(m.name)}! ${tick(m.verified)}</h3><p>${m.age}${m.city?' · 📍 '+esc(m.city):''}<br>${esc(m.bio||'')}</p><button class="btn primary" id="mSay">Say hi 👋</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);
+  $('#mSay').onclick=()=>{closeModal();openChat(id)};
+}
+
+// ================= CHAT =================
+async function openChat(id){
+  const m=matches.find(x=>x.match_id===id);if(!m||!m.unlocked)return;
+  chat={id,m,msgs:[]};
+  $('#chatAv').innerHTML=av(m.photo_url,m.name,42);$('#chatName').innerHTML=esc(m.name)+' '+tick(m.verified);$('#chatSub').textContent=[m.age,m.city].filter(Boolean).join(' · ');
+  $('#msgs').innerHTML='<div class="msgsys"><span class="spin"></span></div>';show('s-chat');
+  const {data,error}=await sb.from('messages').select('*').eq('match_id',id).order('created_at').limit(300);
+  if(error){toast(errMsg(error));return}
+  chat.msgs=data||[];renderMsgs();
+}
+function renderMsgs(){
+  $('#msgs').innerHTML=`<div class="msgsys">You matched with ${esc(chat.m.name)} 💕<br>Be kind. Report anything weird.</div>`+chat.msgs.map(x=>`<div class="msg ${x.sender===P.id?'me':'them'}">${esc(x.body)}</div>`).join('');
+  $('#msgs').scrollTop=1e9;
+}
+function addMsg(row){if(!chat||row.match_id!==chat.id||chat.msgs.some(x=>x.id===row.id))return;chat.msgs.push(row);renderMsgs()}
+$('#composer').onsubmit=async e=>{
+  e.preventDefault();const t=$('#msgIn').value.trim();if(!t||!chat)return;
+  $('#msgIn').value='';
+  const {data,error}=await sb.from('messages').insert({match_id:chat.id,body:t}).select().single();
+  if(error){toast(errMsg(error));$('#msgIn').value=t;return}
+  addMsg(data);
+};
+$('#chatBack').onclick=()=>{chat=null;tab('matches')};
+$('#chatMenu').onclick=()=>{
+  const m=chat.m;
+  modal(`<h3>${esc(m.name)}</h3><p>Kono problem hole amader janao. Report private thakbe.</p>
+  <button class="opt" data-r="Fake profile">🎭 Fake profile</button><button class="opt" data-r="Rude or abusive">🤬 Rude / abusive</button><button class="opt" data-r="Asking for money">💸 Asking for money / scam</button><button class="opt" data-r="Underage">🔞 Looks under 18</button>
+  <button class="btn ghost" id="blockB" style="color:#ff6b8a">🚫 Block ${esc(m.name)}</button><button class="btn ghost" onclick="closeModal()">Cancel</button>`);
+  $$('#modal .opt').forEach(b=>b.onclick=async()=>{const {error}=await sb.from('reports').insert({reported:m.other_id,reason:b.dataset.r});closeModal();toast(error?errMsg(error):'Report sent. Thank you 🙏')});
+  $('#blockB').onclick=async()=>{const {error}=await sb.from('blocks').insert({blocked:m.other_id});closeModal();if(error)return toast(errMsg(error));toast('Blocked 🚫');chat=null;tab('matches')};
+};
+
+// ================= SHOP =================
+const PACKS=[{c:50,p:19},{c:150,p:49,hot:true},{c:350,p:99,tag:'Best value'}];
+const PERKS={
+  boost:{ico:'🚀',bg:'linear-gradient(135deg,#9956fa,#fd6caa)',t:'Profile Boost',d:'Top of the stack for 30 min. More matches!',cost:30},
+  day:{ico:'♾️',bg:'linear-gradient(135deg,#fd6caa,#fe8a7a)',t:'Unlimited swipes · 1 day',d:'Swipe as much as you want for 24 hrs',cost:40},
+  week:{ico:'💎',bg:'linear-gradient(135deg,#2f8bff,#9956fa)',t:'Unlimited swipes · 7 days',d:'Best for serious swipers',cost:150},
+};
+function renderShop(){
+  $('#packs').innerHTML=PACKS.map((k,i)=>`<div class="pack ${k.hot?'hot':''}">${k.hot?'<div class="ribbon">Popular</div>':k.tag?`<div class="ribbon" style="background:var(--purple)">${k.tag}</div>`:''}<div class="c">🪙${k.c}</div><div class="p">₹${k.p}</div><button data-pack="${i}">Buy</button></div>`).join('');
+  $$('[data-pack]').forEach(b=>b.onclick=()=>buyPack(+b.dataset.pack));
+  $('#perks').innerHTML=Object.entries(PERKS).map(([k,v])=>{
+    let st='';if(k==='boost'&&boostOn())st=`Active · ${Math.ceil((new Date(P.boost_until)-Date.now())/60000)} min left`;
+    if(k!=='boost'&&unlimitedOn())st=`Unlimited active · ${Math.ceil((new Date(P.unlimited_until)-Date.now())/3600000)} hr left`;
+    return `<div class="perk"><div class="ico" style="background:${v.bg}">${v.ico}</div><div><div class="t">${v.t}</div><div class="d">${st||v.d}</div></div><button data-perk="${k}">🪙${v.cost}</button></div>`}).join('');
+  $$('[data-perk]').forEach(b=>b.onclick=()=>buyPerk(b.dataset.perk));
+}
+function buyPack(i){
+  const pk=PACKS[i];
+  modal(`<h3>🪙${pk.c} coins · ₹${pk.p}</h3><p><b>BETA test mode:</b> asol payment ekhono chalu hoyni, tai ei coin gulo free-te paabe 🎁</p><button class="btn primary" id="payGo">Get 🪙${pk.c} free</button><button class="btn ghost" onclick="closeModal()">Cancel</button>`);
+  $('#payGo').onclick=async()=>{busy($('#payGo'),true);const {error}=await sb.rpc('beta_topup',{p_pack:i});if(error){busy($('#payGo'),false);return toast(errMsg(error))}await loadProfile();closeModal();renderShop();toast(`+${pk.c} coins added 🎉`)};
+}
+async function buyPerk(k){
+  const v=PERKS[k];
+  if(P.coins<v.cost){modal(`<h3>Not enough coins 🪙</h3><p>${v.t} er jonno ${v.cost} coins lagbe. Tomar ache ${P.coins}.</p><button class="btn primary" id="toShop">Top-up now</button><button class="btn ghost" onclick="closeModal()">Later</button>`);$('#toShop').onclick=()=>{closeModal();tab('shop')};return}
+  const {data,error}=await sb.rpc('buy_perk',{p_kind:k});
+  if(error)return toast(errMsg(error));
+  if(!data.ok)return toast('Not enough coins');
+  await loadProfile();toast(k==='boost'?'🚀 Boost on for 30 min!':'♾️ Unlimited swipes unlocked!');
+  if($('#t-shop').classList.contains('active'))renderShop();else renderDeck();
+}
+function refreshCoins(){$$('.coinVal').forEach(e=>e.textContent=P?P.coins:0)}
+
+// ================= PROFILE =================
+function renderProfile(){
+  const v=P.verified;let vbox='';
+  if(v==='none'||v==='rejected')vbox=`<div class="verifybox"><h3><span class="tick">✓</span> Get your blue tick</h3><p>${v==='rejected'?'Ager selfie ta match koreni, abar try koro. ':''}Ekটা clear selfie tolo, mukh jeno spashto dekha jay. Amra profile photo-r sathe milabo. Verified profile-e beshi match hoy!</p><label class="btn white" style="cursor:pointer;margin:0">📷 Take / upload selfie<input type="file" accept="image/*" capture="user" id="selfie" style="display:none"></label></div>`;
+  else if(v==='pending')vbox=`<div class="verifybox"><h3>⏳ Verification in progress</h3><p>Tomar selfie check kora hocche. Sadharonoto 24 ghontar moddhe hoye jay.</p></div>`;
+  else vbox=`<div class="verifybox" style="background:linear-gradient(135deg,#123d6b,#1d5a9b)"><h3><span class="tick">✓</span> You're verified!</h3><p>Tomar profile-e ekhon blue tick dekhabe.</p></div>`;
+  const prov=(session.user.app_metadata.providers||[session.user.app_metadata.provider]).map(p=>p==='google'?'Google':'Password').join(' + ');
+  $('#profileBody').innerHTML=`
+    <div class="me-top">${av(P.photo_url,P.name,110)}<h2>${esc(P.name)}, ${P.age} ${tick(v==='approved')}</h2>${P.city?`<div style="color:var(--muted);font-size:14px">📍 ${esc(P.city)}</div>`:''}<p style="font-size:14px;margin-top:8px">${esc(P.bio||'')}</p><div class="chips" style="justify-content:center">${(P.interests||[]).map(t=>`<span class="chip" style="background:var(--card2)">${esc(t)}</span>`).join('')}</div></div>
+    ${vbox}
+    <div class="row"><span>Email</span><span>${esc(session.user.email)}</span></div>
+    <div class="row"><span>Login methods</span><span>${prov}</span></div>
+    <div class="row"><span>Coins</span><span>🪙 ${P.coins}</span></div>
+    <div class="row"><span>Free unlocks</span><span>${P.free_unlocks}</span></div>
+    <button class="btn ghost" id="editP" style="margin-top:6px">✏️ Edit profile</button>
+    <button class="btn ghost" id="logoutB" style="margin-top:10px">Log out</button>
+    <div class="small">Lovsora BETA · Same account works on app & website 💜</div>`;
+  const s=$('#selfie');
+  if(s)s.onchange=async()=>{const f=s.files[0];if(!f)return;toast('Uploading selfie...');
+    try{const blob=await compress(f,1280),path=`${P.id}/${Date.now()}.jpg`;
+      const {error:e1}=await sb.storage.from('selfies').upload(path,blob,{contentType:'image/jpeg'});if(e1)throw e1;
+      const {error:e2}=await sb.rpc('request_verification',{p_selfie_path:path});if(e2)throw e2;
+      P.verified='pending';renderProfile();toast('Selfie submitted 📸');
+    }catch(e){toast(errMsg(e))}};
+  $('#editP').onclick=()=>{renderSetup();show('s-setup')};
+  $('#logoutB').onclick=async()=>{await sb.auth.signOut()};
+}
+
+// ================= REALTIME =================
+function startRealtime(){
+  stopRealtime();
+  rt=sb.channel('me-'+P.id)
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'matches'},()=>{
+      $('#matchDot').style.display='block';
+      if($('#t-matches').classList.contains('active')&&$('#s-main').classList.contains('active'))loadMatches();
+      else if(!$('#overlay').classList.contains('show'))toast('💘 You have a new match!');
+    })
+    .on('postgres_changes',{event:'INSERT',schema:'public',table:'messages'},({new:row})=>{
+      if(chat&&row.match_id===chat.id){addMsg(row);return}
+      if(row.sender!==P.id){$('#matchDot').style.display='block';toast('💬 New message');if($('#t-matches').classList.contains('active'))loadMatches()}
+    })
+    .subscribe();
+}
+function stopRealtime(){if(rt){sb.removeChannel(rt);rt=null}}
+
+// ================= NAV =================
+function tab(name){
+  show('s-main');
+  $$('#s-main > .screen').forEach(s=>s.classList.remove('active'));$('#t-'+name).classList.add('active');
+  $$('nav button').forEach(b=>b.classList.toggle('on',b.dataset.tab===name));
+  refreshCoins();
+  if(name==='discover')openDiscover();
+  if(name==='matches'){$('#matchDot').style.display='none';$('#matchList').innerHTML='<div class="empty" style="position:static;padding-top:80px"><span class="spin"></span></div>';loadMatches()}
+  if(name==='shop')renderShop();
+  if(name==='profile')renderProfile();
+}
+$$('nav button').forEach(b=>b.onclick=()=>tab(b.dataset.tab));
+</script>
+</body>
+</html>
