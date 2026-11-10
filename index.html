@@ -177,6 +177,10 @@ nav button.on .ic{filter:none;opacity:1}
 .menu-dots{margin-left:auto;background:none;color:var(--text);font-size:22px;padding:4px 10px}
 .opt{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:14px;background:var(--card2);color:var(--text);margin-bottom:8px;font-size:15px}
 .beta{font-size:10px;background:var(--grad);padding:2px 8px;border-radius:999px;margin-left:6px;font-weight:600;vertical-align:middle}
+.pv-photo{width:100%;aspect-ratio:4/5;border-radius:18px;background-size:cover;background-position:center;margin-bottom:14px;display:flex;align-items:center;justify-content:center;font-size:90px;font-weight:800}
+.pv h3{display:flex;align-items:center;justify-content:center;gap:6px;font-size:22px}
+.modal{max-height:90vh;overflow-y:auto}
+#chatAv,#chatName{cursor:pointer}
 .spin{display:inline-block;width:16px;height:16px;border:2px solid #fff6;border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle}
 @keyframes sp{to{transform:rotate(360deg)}}
 </style>
@@ -258,7 +262,7 @@ nav button.on .ic{filter:none;opacity:1}
         <div class="sec">Use coins</div>
         <div class="perk"><div class="ico" style="background:linear-gradient(135deg,#2fd38a,#2f8bff)">🔓</div><div><div class="t">Unlock a match</div><div class="d">See who liked you back & chat · 1st one free</div></div><span style="margin-left:auto;font-weight:600;font-size:13px;color:var(--muted)">🪙20</span></div>
         <div id="perks"></div>
-        <div class="small">BETA: payment ekhono test mode-e. Coin free-te paabe.</div>
+        <div class="small">Beta: payments are in test mode, so coins are free for now.</div>
       </div>
     </div>
     <div class="screen" id="t-profile">
@@ -275,7 +279,7 @@ nav button.on .ic{filter:none;opacity:1}
 
   <!-- CHAT -->
   <section class="screen" id="s-chat">
-    <div class="chathead"><button class="back" id="chatBack">‹</button><div id="chatAv"></div><div><div id="chatName" style="font-weight:600;display:flex;gap:4px;align-items:center"></div><div style="font-size:12px;color:var(--muted)" id="chatSub"></div></div><button class="menu-dots" id="chatMenu">⋮</button></div>
+    <div class="chathead"><button class="back" id="chatBack">‹</button><div id="chatAv"></div><div id="chatWho" style="cursor:pointer"><div id="chatName" style="font-weight:600;display:flex;gap:4px;align-items:center"></div><div style="font-size:12px;color:var(--muted)" id="chatSub"></div></div><button class="menu-dots" id="chatMenu">⋮</button></div>
     <div class="msgs" id="msgs"></div>
     <form class="composer" id="composer"><input id="msgIn" placeholder="Say something nice 👋" autocomplete="off" maxlength="1000"><button class="send grad" type="submit">➤</button></form>
   </section>
@@ -314,13 +318,13 @@ function av(url,name,size=56){
 function lockedAv(name,size=56){return `<div class="lockav" style="width:${size}px;height:${size}px"><div class="lockph" style="background:${grad(name)}"></div><div class="lk" style="font-size:${size*.32}px">🔒</div></div>`}
 function busy(btn,on,label){if(!btn)return;if(on){btn._l=btn.innerHTML;btn.disabled=true;btn.innerHTML='<span class="spin"></span>'}else{btn.disabled=false;btn.innerHTML=label||btn._l}}
 function errMsg(e){const m=(e&&e.message)||String(e);
-  if(/Invalid login/i.test(m))return 'Email ba password bhul';
-  if(/already registered/i.test(m))return 'Ei email-e already account ache. Log in koro.';
-  if(/provider is not enabled/i.test(m))return 'Google login ekhono chalu hoyni. Email diye try koro.';
-  if(/Email not confirmed/i.test(m))return 'Age email-e asha link-e click kore confirm koro.';
-  if(/rate limit/i.test(m))return 'Onek beshi try hoyeche, kichukkhon por abar try koro.';
+  if(/Invalid login/i.test(m))return 'Incorrect email or password.';
+  if(/already registered/i.test(m))return 'An account with this email already exists. Please log in.';
+  if(/provider is not enabled/i.test(m))return 'Google sign-in is not available yet. Please use email instead.';
+  if(/Email not confirmed/i.test(m))return 'Please confirm your email address using the link we sent you.';
+  if(/rate limit/i.test(m))return 'Too many attempts. Please try again in a few minutes.';
   return m}
-function compress(file,max=1080){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(img.src);c.toBlob(b=>b?res(b):rej(new Error('Photo process kora gelo na')),'image/jpeg',.82)};img.onerror=()=>rej(new Error('Ei photo ta khola jacche na, onno photo try koro'));img.src=URL.createObjectURL(file)})}
+function compress(file,max=1080){return new Promise((res,rej)=>{const img=new Image();img.onload=()=>{let w=img.naturalWidth,h=img.naturalHeight;const s=Math.min(1,max/Math.max(w,h));w=Math.round(w*s);h=Math.round(h*s);const c=document.createElement('canvas');c.width=w;c.height=h;c.getContext('2d').drawImage(img,0,0,w,h);URL.revokeObjectURL(img.src);c.toBlob(b=>b?res(b):rej(new Error('We couldn\'t process this photo.')),'image/jpeg',.82)};img.onerror=()=>rej(new Error('This photo can\'t be opened. Please try a different one.'));img.src=URL.createObjectURL(file)})}
 const unlimitedOn = () => P && P.unlimited_until && new Date(P.unlimited_until) > new Date();
 const boostOn = () => P && P.boost_until && new Date(P.boost_until) > new Date();
 function swipesLeft(){if(unlimitedOn())return Infinity;return P.swipe_day!==istToday()?FREE_SWIPES:Math.max(0,FREE_SWIPES-P.swipes_used)}
@@ -334,19 +338,19 @@ $('#authForm').onsubmit=async e=>{
   e.preventDefault();
   const email=$('#aEmail').value.trim().toLowerCase(),pass=$('#aPass').value,err=$('#authErr'),btn=$('#authSubmit');
   err.textContent='';
-  if(!/^\S+@\S+\.\S+$/.test(email))return err.textContent='Valid email dao';
+  if(!/^\S+@\S+\.\S+$/.test(email))return err.textContent='Please enter a valid email address.';
   if(mode==='signup'){
     const name=$('#aName').value.trim();
-    if(!name)return err.textContent='Tomar naam dao';
-    if(pass.length<8||!/[a-z]/i.test(pass)||!/\d/.test(pass))return err.textContent='Password: 8+ characters, letter + number lagbe';
+    if(!name)return err.textContent='Please enter your name.';
+    if(pass.length<8||!/[a-z]/i.test(pass)||!/\d/.test(pass))return err.textContent='Password must be at least 8 characters and include a letter and a number.';
     busy(btn,true);
     const {data,error}=await sb.auth.signUp({email,password:pass,options:{data:{name},emailRedirectTo:location.origin}});
     busy(btn,false);
     if(error)return err.textContent=errMsg(error);
-    if(data.user&&data.user.identities&&data.user.identities.length===0)return err.textContent='Ei email-e already account ache. Log in koro.';
-    if(!data.session)modal(`<h3>Check your email 📩</h3><p><b>${esc(email)}</b>-e ekটা confirm link pathano hoyeche. Link-e click kore tarpor log in koro.</p><button class="btn primary" onclick="closeModal()">OK</button>`);
+    if(data.user&&data.user.identities&&data.user.identities.length===0)return err.textContent='An account with this email already exists. Please log in.';
+    if(!data.session)modal(`<h3>Check your email 📩</h3><p>We've sent a confirmation link to <b>${esc(email)}</b>. Click it, then log in.</p><button class="btn primary" onclick="closeModal()">OK</button>`);
   }else{
-    if(!pass)return err.textContent='Password dao';
+    if(!pass)return err.textContent='Please enter your password.';
     busy(btn,true);
     const {error}=await sb.auth.signInWithPassword({email,password:pass});
     busy(btn,false);
@@ -355,18 +359,18 @@ $('#authForm').onsubmit=async e=>{
 };
 $('#forgotBtn').onclick=async()=>{
   const email=$('#aEmail').value.trim().toLowerCase();
-  if(!/^\S+@\S+\.\S+$/.test(email))return $('#authErr').textContent='Age upore tomar email ta likho';
+  if(!/^\S+@\S+\.\S+$/.test(email))return $('#authErr').textContent='Enter your email address above first.';
   const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin});
   if(error)return $('#authErr').textContent=errMsg(error);
-  modal(`<h3>Reset link sent 📩</h3><p><b>${esc(email)}</b>-e password reset link pathano hoyeche. Link-e click korle notun password dite parbe.</p><button class="btn primary" onclick="closeModal()">OK</button>`);
+  modal(`<h3>Reset link sent 📩</h3><p>We've sent a password reset link to <b>${esc(email)}</b>. Follow it to set a new password.</p><button class="btn primary" onclick="closeModal()">OK</button>`);
 };
 $('#googleBtn').onclick=async()=>{
   const {error}=await sb.auth.signInWithOAuth({provider:'google',options:{redirectTo:location.origin}});
   if(error)$('#authErr').textContent=errMsg(error);
 };
 function showResetPw(){
-  modal(`<h3>Set a new password 🔑</h3><p>Notun password dao (8+ characters, letter + number)</p><input id="npw" type="password" autocomplete="new-password" placeholder="New password"><div class="err" id="npwErr"></div><button class="btn primary" id="npwGo">Save password</button>`);
-  $('#npwGo').onclick=async()=>{const pw=$('#npw').value;if(pw.length<8||!/[a-z]/i.test(pw)||!/\d/.test(pw))return $('#npwErr').textContent='8+ characters, letter + number lagbe';busy($('#npwGo'),true);const {error}=await sb.auth.updateUser({password:pw});busy($('#npwGo'),false);if(error)return $('#npwErr').textContent=errMsg(error);closeModal();toast('Password updated ✅')};
+  modal(`<h3>Set a new password 🔑</h3><p>Choose a new password (at least 8 characters, with a letter and a number).</p><input id="npw" type="password" autocomplete="new-password" placeholder="New password"><div class="err" id="npwErr"></div><button class="btn primary" id="npwGo">Save password</button>`);
+  $('#npwGo').onclick=async()=>{const pw=$('#npw').value;if(pw.length<8||!/[a-z]/i.test(pw)||!/\d/.test(pw))return $('#npwErr').textContent='Use at least 8 characters, including a letter and a number.';busy($('#npwGo'),true);const {error}=await sb.auth.updateUser({password:pw});busy($('#npwGo'),false);if(error)return $('#npwErr').textContent=errMsg(error);closeModal();toast('Password updated ✅')};
 }
 
 sb.auth.onAuthStateChange((event,s)=>{
@@ -383,8 +387,8 @@ async function loadProfile(){
 async function route(){
   stopRealtime();
   if(!session){P=null;show('s-auth');return}
-  try{await loadProfile()}catch(e){toast('Profile load hocche na: '+errMsg(e));show('s-auth');return}
-  if(P.is_banned){modal(`<h3>Account suspended</h3><p>Tomar account ta community rules bhangar jonno bondho kora hoyeche.</p><button class="btn ghost" id="lo">Log out</button>`);$('#lo').onclick=()=>{closeModal();sb.auth.signOut()};return}
+  try{await loadProfile()}catch(e){toast('Couldn\'t load your profile: '+errMsg(e));show('s-auth');return}
+  if(P.is_banned){modal(`<h3>Account suspended</h3><p>Your account has been suspended for violating our community guidelines.</p><button class="btn ghost" id="lo">Log out</button>`);$('#lo').onclick=()=>{closeModal();sb.auth.signOut()};return}
   startRealtime();
   if(!P.age){renderSetup();show('s-setup');return}
   tab('discover');
@@ -403,17 +407,17 @@ function renderSetup(){
   chips($('#genderPick'),GENDERS,pickGender,v=>pickGender=v);
   chips($('#showPick'),SHOWME,pickShow,v=>pickShow=v);
   $('#intPick').innerHTML=INTERESTS.map(i=>`<button type="button" class="int ${pickInts.includes(i)?'on':''}" data-i="${i}">${i}</button>`).join('');
-  $$('#intPick .int').forEach(b=>b.onclick=()=>{const i=b.dataset.i;if(pickInts.includes(i))pickInts=pickInts.filter(x=>x!==i);else{if(pickInts.length>=5)return toast('Max 5 ta');pickInts.push(i)}b.classList.toggle('on',pickInts.includes(i))});
+  $$('#intPick .int').forEach(b=>b.onclick=()=>{const i=b.dataset.i;if(pickInts.includes(i))pickInts=pickInts.filter(x=>x!==i);else{if(pickInts.length>=5)return toast('You can pick up to 5 interests.');pickInts.push(i)}b.classList.toggle('on',pickInts.includes(i))});
   if(P.photo_url)setPhotoPreview(P.photo_url);
 }
 $('#photoIn').onchange=async e=>{const f=e.target.files[0];if(!f)return;try{pickedPhoto=await compress(f);setPhotoPreview(URL.createObjectURL(pickedPhoto))}catch(er){toast(er.message)}};
 $('#setupDone').onclick=async()=>{
   const err=$('#setupErr'),btn=$('#setupDone'),name=$('#sName').value.trim(),age=parseInt($('#sAge').value,10);
   err.textContent='';
-  if(!pickedPhoto&&!P.photo_url)return err.textContent='Ekটা photo add koro 📷';
-  if(!name)return err.textContent='Name dao';
-  if(!age||age<18||age>99)return err.textContent='Shudhu 18+ allowed';
-  if(!pickGender)return err.textContent='"I am a" select koro';
+  if(!pickedPhoto&&!P.photo_url)return err.textContent='Please add a profile photo 📷';
+  if(!name)return err.textContent='Please enter your name.';
+  if(!age||age<18||age>99)return err.textContent='You must be 18 or older to use Lovsora.';
+  if(!pickGender)return err.textContent='Please select your gender.';
   busy(btn,true);
   try{
     let photo_url=P.photo_url;
@@ -442,8 +446,8 @@ async function openDiscover(){$('#deck').innerHTML='<div class="empty"><span cla
 function renderDeck(){
   const deck=$('#deck'),left=swipesLeft();
   $('#swipeInfo').innerHTML=(unlimitedOn()?'♾️ Unlimited swipes active':`${left} free swipes left today`)+(boostOn()?' · 🚀 Boost on':'');
-  if(left<=0){deck.innerHTML=`<div class="empty"><div class="big">⏳</div><b style="color:var(--text)">Ajker free swipes shesh!</b>Kal abar ${FREE_SWIPES} ta free paabe, ba ekhon-i unlimited nao.<button class="btn primary" style="width:auto;padding:12px 22px" id="goShop">♾️ Get unlimited swipes</button></div>`;$('#goShop').onclick=()=>tab('shop');return}
-  if(!queue.length){deck.innerHTML=`<div class="empty"><div class="big">🌍</div><b style="color:var(--text)">Ekhon r keu nei</b>Beta-te ekhono kom user. Bondhuder Lovsora-r link pathao, tarpor ekhane refresh koro!<button class="btn ghost" style="width:auto;padding:10px 20px" id="refreshDeck">🔄 Refresh</button></div>`;$('#refreshDeck').onclick=openDiscover;return}
+  if(left<=0){deck.innerHTML=`<div class="empty"><div class="big">⏳</div><b style="color:var(--text)">You're out of free swipes for today</b>You'll get ${FREE_SWIPES} more tomorrow, or go unlimited now.<button class="btn primary" style="width:auto;padding:12px 22px" id="goShop">♾️ Get unlimited swipes</button></div>`;$('#goShop').onclick=()=>tab('shop');return}
+  if(!queue.length){deck.innerHTML=`<div class="empty"><div class="big">🌍</div><b style="color:var(--text)">You've seen everyone for now</b>New people are joining every day. Invite your friends to Lovsora, then check back soon!<button class="btn ghost" style="width:auto;padding:10px 20px" id="refreshDeck">🔄 Refresh</button></div>`;$('#refreshDeck').onclick=openDiscover;return}
   deck.innerHTML=queue.slice(0,2).reverse().map((p,i,arr)=>`
     <div class="pcard" data-id="${p.id}" style="${i<arr.length-1?'transform:scale(.95) translateY(10px)':''}">
       ${p.photo_url?`<div class="photo ph" style="background-image:url('${esc(p.photo_url)}')"></div>`:`<div class="photo" style="background:${grad(p.name)};font-size:110px;font-weight:800">${esc((p.name||'?')[0])}</div>`}
@@ -483,7 +487,7 @@ $('#shopBtn').onclick=()=>tab('shop');$('#boostBtn').onclick=()=>buyPerk('boost'
 function unlockLabel(){return P.free_unlocks>0?'🎁 Unlock free (1st one on us)':`🔓 Unlock for 🪙${UNLOCK_COST}`}
 function showMatch(p,matchId){
   $('#matchDot').style.display='block';
-  modal(`<div class="matchpop"><div class="title gradtext">It's a Match!</div><div class="pair">${av(P.photo_url,P.name,100)}<div style="margin-left:-20px;border:4px solid #fff;border-radius:50%">${lockedAv(p.name,92)}</div></div><p>Someone liked you back 💕<br>Unlock korle dekhte parbe ke, ar chat korte parbe.</p><button class="btn primary" id="mUnlock">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);
+  modal(`<div class="matchpop"><div class="title gradtext">It's a Match!</div><div class="pair">${av(P.photo_url,P.name,100)}<div style="margin-left:-20px;border:4px solid #fff;border-radius:50%">${lockedAv(p.name,92)}</div></div><p>Someone liked you back 💕<br>Unlock to see who it is and start chatting.</p><button class="btn primary" id="mUnlock">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);
   $('#mUnlock').onclick=()=>unlockMatch(matchId);
 }
 
@@ -495,27 +499,35 @@ async function loadMatches(){
 }
 function renderMatches(){
   const el=$('#matchList');
-  if(!matches.length){el.innerHTML=`<div class="empty" style="position:static;padding-top:80px"><div class="big">💘</div><b style="color:var(--text)">Ekhono kono match nei</b>Discover-e giye swipe right koro!</div>`;return}
+  if(!matches.length){el.innerHTML=`<div class="empty" style="position:static;padding-top:80px"><div class="big">💘</div><b style="color:var(--text)">No matches yet</b>Head to Discover and start swiping!</div>`;return}
   const locked=matches.filter(m=>!m.unlocked),fresh=matches.filter(m=>m.unlocked&&!m.last_msg),convo=matches.filter(m=>m.unlocked&&m.last_msg);
   let h='';
   if(locked.length)h+=`<div class="sec">🔒 Liked you back (${locked.length})</div>`+locked.map(m=>`<div class="mitem" data-unlock="${m.match_id}">${lockedAv(m.name,56)}<div><div class="name">${esc(m.name)}, ${m.age}</div><div class="last">Unlock to see who & chat</div></div><button class="unlockbtn">${P.free_unlocks>0?'🎁 Free':'🪙'+UNLOCK_COST}</button></div>`).join('')+'<div style="height:14px"></div>';
-  if(fresh.length)h+=`<div class="sec">New matches</div><div class="newrow">${fresh.map(m=>`<div style="text-align:center;cursor:pointer" data-open="${m.match_id}">${av(m.photo_url,m.name,70)}<div style="font-size:12px;margin-top:4px">${esc(m.name)}</div></div>`).join('')}</div>`;
+  if(fresh.length)h+=`<div class="sec">New matches</div><div class="newrow">${fresh.map(m=>`<div style="text-align:center;cursor:pointer" data-view="${m.match_id}">${av(m.photo_url,m.name,70)}<div style="font-size:12px;margin-top:4px">${esc(m.name)}</div></div>`).join('')}</div>`;
   if(convo.length)h+=`<div class="sec" style="margin-top:14px">Messages</div>`+convo.map(m=>`<div class="mitem" data-open="${m.match_id}">${av(m.photo_url,m.name,56)}<div><div class="name">${esc(m.name)} ${tick(m.verified)}</div><div class="last">${esc(m.last_msg)}</div></div></div>`).join('');
   el.innerHTML=h;
   el.querySelectorAll('[data-open]').forEach(x=>x.onclick=()=>openChat(x.dataset.open));
-  el.querySelectorAll('[data-unlock]').forEach(x=>x.onclick=()=>{const m=matches.find(y=>y.match_id===x.dataset.unlock);modal(`<div class="matchpop"><div class="pair">${lockedAv(m.name,100)}</div><h3>${esc(m.name)}, ${m.age} liked you back 💕</h3><p>Unlock korle chobi, naam, profile dekhte parbe ar chat korte parbe.</p><button class="btn primary" id="uGo">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);$('#uGo').onclick=()=>unlockMatch(m.match_id)});
+  el.querySelectorAll('[data-view]').forEach(x=>x.onclick=()=>showProfile(matches.find(y=>y.match_id===x.dataset.view)));
+  el.querySelectorAll('[data-unlock]').forEach(x=>x.onclick=()=>{const m=matches.find(y=>y.match_id===x.dataset.unlock);modal(`<div class="matchpop"><div class="pair">${lockedAv(m.name,100)}</div><h3>${esc(m.name)}, ${m.age} liked you back 💕</h3><p>Unlock to see their photo, name and profile, and start chatting.</p><button class="btn primary" id="uGo">${unlockLabel()}</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);$('#uGo').onclick=()=>unlockMatch(m.match_id)});
 }
 async function unlockMatch(id){
   const btn=$('#mUnlock')||$('#uGo');busy(btn,true);
   const {data,error}=await sb.rpc('unlock_match',{p_match:id});
   busy(btn,false);
   if(error)return toast(errMsg(error));
-  if(!data.ok){modal(`<h3>Not enough coins 🪙</h3><p>Match unlock korte ${UNLOCK_COST} coins lagbe. Tomar ache ${P.coins}.</p><button class="btn primary" id="toShop">Top-up now</button><button class="btn ghost" onclick="closeModal()">Later</button>`);$('#toShop').onclick=()=>{closeModal();tab('shop')};return}
+  if(!data.ok){modal(`<h3>Not enough coins 🪙</h3><p>Unlocking a match costs ${UNLOCK_COST} coins. You have ${P.coins}.</p><button class="btn primary" id="toShop">Top-up now</button><button class="btn ghost" onclick="closeModal()">Later</button>`);$('#toShop').onclick=()=>{closeModal();tab('shop')};return}
   await loadProfile();await loadMatches();
   const m=matches.find(x=>x.match_id===id);
   if(!m)return closeModal();
-  modal(`<div class="matchpop"><div class="pair">${av(m.photo_url,m.name,110)}</div><h3>It's ${esc(m.name)}! ${tick(m.verified)}</h3><p>${m.age}${m.city?' · 📍 '+esc(m.city):''}<br>${esc(m.bio||'')}</p><button class="btn primary" id="mSay">Say hi 👋</button><button class="btn ghost" onclick="closeModal()">Later</button></div>`);
-  $('#mSay').onclick=()=>{closeModal();openChat(id)};
+  modal(`<div class="matchpop"><div class="pair">${av(m.photo_url,m.name,110)}</div><h3>It's ${esc(m.name)}! ${tick(m.verified)}</h3><p>${m.age}${m.city?' · 📍 '+esc(m.city):''}<br>${esc(m.bio||'')}</p><button class="btn primary" id="mSay">Say hi 👋</button><button class="btn ghost" id="mView">View profile</button></div>`);
+  $('#mSay').onclick=()=>{closeModal();openChat(id)};$('#mView').onclick=()=>showProfile(m);
+}
+
+// ================= PROFILE VIEW =================
+function showProfile(m){
+  const photo=m.photo_url?`<div class="pv-photo" style="background-image:url('${esc(m.photo_url)}')"></div>`:`<div class="pv-photo" style="background:${grad(m.name)}">${esc((m.name||'?')[0])}</div>`;
+  modal(`<div class="pv">${photo}<h3>${esc(m.name)}, ${m.age} ${tick(m.verified)}</h3>${m.city?`<p style="margin:4px 0 0">📍 ${esc(m.city)}</p>`:''}${m.bio?`<p style="color:var(--text);margin:12px 0 0">${esc(m.bio)}</p>`:''}<div class="chips" style="justify-content:center;margin:14px 0 6px">${(m.interests||[]).map(t=>`<span class="chip" style="background:var(--card2)">${esc(t)}</span>`).join('')}</div><button class="btn primary" id="pvMsg" style="margin-top:14px">💬 Message</button><button class="btn ghost" onclick="closeModal()">Close</button></div>`);
+  $('#pvMsg').onclick=()=>{closeModal();if(!chat||chat.id!==m.match_id)openChat(m.match_id)};
 }
 
 // ================= CHAT =================
@@ -540,10 +552,11 @@ $('#composer').onsubmit=async e=>{
   if(error){toast(errMsg(error));$('#msgIn').value=t;return}
   addMsg(data);
 };
+$('#chatAv').onclick=()=>chat&&showProfile(chat.m);$('#chatWho').onclick=()=>chat&&showProfile(chat.m);
 $('#chatBack').onclick=()=>{chat=null;tab('matches')};
 $('#chatMenu').onclick=()=>{
   const m=chat.m;
-  modal(`<h3>${esc(m.name)}</h3><p>Kono problem hole amader janao. Report private thakbe.</p>
+  modal(`<h3>${esc(m.name)}</h3><p>Let us know if something's wrong. Reports are anonymous.</p>
   <button class="opt" data-r="Fake profile">🎭 Fake profile</button><button class="opt" data-r="Rude or abusive">🤬 Rude / abusive</button><button class="opt" data-r="Asking for money">💸 Asking for money / scam</button><button class="opt" data-r="Underage">🔞 Looks under 18</button>
   <button class="btn ghost" id="blockB" style="color:#ff6b8a">🚫 Block ${esc(m.name)}</button><button class="btn ghost" onclick="closeModal()">Cancel</button>`);
   $$('#modal .opt').forEach(b=>b.onclick=async()=>{const {error}=await sb.from('reports').insert({reported:m.other_id,reason:b.dataset.r});closeModal();toast(error?errMsg(error):'Report sent. Thank you 🙏')});
@@ -568,12 +581,12 @@ function renderShop(){
 }
 function buyPack(i){
   const pk=PACKS[i];
-  modal(`<h3>🪙${pk.c} coins · ₹${pk.p}</h3><p><b>BETA test mode:</b> asol payment ekhono chalu hoyni, tai ei coin gulo free-te paabe 🎁</p><button class="btn primary" id="payGo">Get 🪙${pk.c} free</button><button class="btn ghost" onclick="closeModal()">Cancel</button>`);
+  modal(`<h3>🪙${pk.c} coins · ₹${pk.p}</h3><p><b>BETA test mode:</b> payments aren't live yet, so these coins are on us 🎁</p><button class="btn primary" id="payGo">Get 🪙${pk.c} free</button><button class="btn ghost" onclick="closeModal()">Cancel</button>`);
   $('#payGo').onclick=async()=>{busy($('#payGo'),true);const {error}=await sb.rpc('beta_topup',{p_pack:i});if(error){busy($('#payGo'),false);return toast(errMsg(error))}await loadProfile();closeModal();renderShop();toast(`+${pk.c} coins added 🎉`)};
 }
 async function buyPerk(k){
   const v=PERKS[k];
-  if(P.coins<v.cost){modal(`<h3>Not enough coins 🪙</h3><p>${v.t} er jonno ${v.cost} coins lagbe. Tomar ache ${P.coins}.</p><button class="btn primary" id="toShop">Top-up now</button><button class="btn ghost" onclick="closeModal()">Later</button>`);$('#toShop').onclick=()=>{closeModal();tab('shop')};return}
+  if(P.coins<v.cost){modal(`<h3>Not enough coins 🪙</h3><p>${v.t} costs ${v.cost} coins. You have ${P.coins}.</p><button class="btn primary" id="toShop">Top-up now</button><button class="btn ghost" onclick="closeModal()">Later</button>`);$('#toShop').onclick=()=>{closeModal();tab('shop')};return}
   const {data,error}=await sb.rpc('buy_perk',{p_kind:k});
   if(error)return toast(errMsg(error));
   if(!data.ok)return toast('Not enough coins');
@@ -585,9 +598,9 @@ function refreshCoins(){$$('.coinVal').forEach(e=>e.textContent=P?P.coins:0)}
 // ================= PROFILE =================
 function renderProfile(){
   const v=P.verified;let vbox='';
-  if(v==='none'||v==='rejected')vbox=`<div class="verifybox"><h3><span class="tick">✓</span> Get your blue tick</h3><p>${v==='rejected'?'Ager selfie ta match koreni, abar try koro. ':''}Ekটা clear selfie tolo, mukh jeno spashto dekha jay. Amra profile photo-r sathe milabo. Verified profile-e beshi match hoy!</p><label class="btn white" style="cursor:pointer;margin:0">📷 Take / upload selfie<input type="file" accept="image/*" capture="user" id="selfie" style="display:none"></label></div>`;
-  else if(v==='pending')vbox=`<div class="verifybox"><h3>⏳ Verification in progress</h3><p>Tomar selfie check kora hocche. Sadharonoto 24 ghontar moddhe hoye jay.</p></div>`;
-  else vbox=`<div class="verifybox" style="background:linear-gradient(135deg,#123d6b,#1d5a9b)"><h3><span class="tick">✓</span> You're verified!</h3><p>Tomar profile-e ekhon blue tick dekhabe.</p></div>`;
+  if(v==='none'||v==='rejected')vbox=`<div class="verifybox"><h3><span class="tick">✓</span> Get your blue tick</h3><p>${v==='rejected'?'Your last selfie did not match your photos. Please try again. ':''}Take a clear selfie with your face fully visible. We'll compare it with your profile photos. Verified profiles get more matches!</p><label class="btn white" style="cursor:pointer;margin:0">📷 Take / upload selfie<input type="file" accept="image/*" capture="user" id="selfie" style="display:none"></label></div>`;
+  else if(v==='pending')vbox=`<div class="verifybox"><h3>⏳ Verification in progress</h3><p>We're reviewing your selfie. This usually takes less than 24 hours.</p></div>`;
+  else vbox=`<div class="verifybox" style="background:linear-gradient(135deg,#123d6b,#1d5a9b)"><h3><span class="tick">✓</span> You're verified!</h3><p>Your profile now shows the blue verified badge.</p></div>`;
   const prov=(session.user.app_metadata.providers||[session.user.app_metadata.provider]).map(p=>p==='google'?'Google':'Password').join(' + ');
   $('#profileBody').innerHTML=`
     <div class="me-top">${av(P.photo_url,P.name,110)}<h2>${esc(P.name)}, ${P.age} ${tick(v==='approved')}</h2>${P.city?`<div style="color:var(--muted);font-size:14px">📍 ${esc(P.city)}</div>`:''}<p style="font-size:14px;margin-top:8px">${esc(P.bio||'')}</p><div class="chips" style="justify-content:center">${(P.interests||[]).map(t=>`<span class="chip" style="background:var(--card2)">${esc(t)}</span>`).join('')}</div></div>
